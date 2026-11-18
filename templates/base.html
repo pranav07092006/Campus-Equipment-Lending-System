@@ -1,0 +1,27 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="ReLoop connects reusable electronic parts with the people who need them for a repair.">
+  <title>{% block title %}ReLoop · Parts with a second purpose{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'exchange/app.css' %}">
+  <script defer src="{% static 'exchange/app.js' %}"></script>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header"><div class="shell header-inner">
+  <a class="brand" href="{% url 'home' %}" aria-label="ReLoop home"><span class="brand-mark" aria-hidden="true">↻</span>reloop<span class="brand-dot">.</span></a>
+  <nav aria-label="Main navigation">
+    <a href="{% url 'home' %}" {% if request.resolver_match.url_name == 'home' %}aria-current="page"{% endif %}>Find a part</a>
+    <a href="{% url 'about' %}">How it works</a>
+    {% if user.is_authenticated %}<a href="{% url 'dashboard' %}">My workspace</a>{% else %}<a href="{% url 'login' %}">Log in</a>{% endif %}
+  </nav>
+  <a class="button button-dark button-small" href="{% url 'part-create' %}">List a part <span aria-hidden="true">＋</span></a>
+</div></header>
+<main id="main" class="shell">
+  {% if messages %}<div class="messages" role="status">{% for message in messages %}<div class="message {{ message.tags }}">{{ message }}</div>{% endfor %}</div>{% endif %}
+  {% block content %}{% endblock %}
+</main>
+<footer class="site-footer shell"><div><a class="footer-brand" href="{% url 'home' %}">reloop.</a><p>A useful part deserves another repair.</p></div><div><a href="{% url 'api-docs' %}">API & project guide</a><a href="{% url 'about' %}">About the exchange</a>{% if user.is_staff %}<a href="/admin/">Moderation</a>{% endif %}</div><p class="footer-note">A student project applying Meta Back-End Developer concepts.<br>Compatibility and condition require human verification.</p></footer>
+</body></html>

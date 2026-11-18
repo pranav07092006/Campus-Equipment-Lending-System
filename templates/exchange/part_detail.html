@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}{{ part.title }} · ReLoop{% endblock %}
+{% block content %}
+<a class="back-link" href="{% url 'home' %}#parts">← Back to the parts shelf</a>
+<section class="detail-layout">
+  <div><div class="detail-art part-art {{ part.category }}"><span class="art-category">{{ part.get_category_display }}</span><span class="part-monogram" aria-hidden="true">{% if part.category == 'screen' %}LCD{% elif part.category == 'memory' %}RAM{% elif part.category == 'storage' %}DISK{% elif part.category == 'keyboard' %}KEY{% else %}PART{% endif %}</span><span class="art-code">{{ part.part_code }}</span></div><p class="muted small">Category artwork, not a photograph of the actual item.</p>
+    <section class="detail-section"><h2>About this part</h2><div class="body-copy">{{ part.description|linebreaks }}</div></section>
+    <section class="detail-section"><h2>Listed compatible models</h2><ul class="model-list">{% for model in part.model_list %}<li>{{ model }}</li>{% endfor %}</ul><p class="muted small">Donor-supplied information. Check exact part codes, connectors and manufacturer specifications before arranging collection.</p></section>
+  </div>
+  <div class="detail-summary"><p class="eyebrow">{{ part.get_category_display }} / {{ part.get_status_display }}</p><h1>{{ part.title }}</h1><span class="condition {{ part.condition }}">{{ part.get_condition_display }}</span>
+    <dl class="spec-list"><div><dt>Manufacturer</dt><dd>{{ part.manufacturer }}</dd></div><div><dt>Part code</dt><dd><code>{{ part.part_code }}</code></dd></div><div><dt>Pickup area</dt><dd>{{ part.pickup_area }}</dd></div><div><dt>Listed by</dt><dd>{{ part.owner.username }}</dd></div><div><dt>Added</dt><dd>{{ part.created_at|date:'d M Y' }}</dd></div></dl>
+    {% if user == part.owner %}<div class="info-note">This is your listing. You can track requests and confirm collection in your workspace.</div><a class="button button-dark full-width" href="{% url 'dashboard' %}">Open my workspace</a>{% if part.status == 'available' %}<a class="button button-outline full-width" href="{% url 'part-edit' part.pk %}">Edit listing</a>{% endif %}
+    {% elif my_reservation %}<div class="info-note">You have reserved this part. The donor confirms collection after your handover.</div><a class="button button-dark full-width" href="{% url 'dashboard' %}">View my reservation</a>
+    {% elif part.status != 'available' %}<div class="info-note">This part is {{ part.get_status_display|lower }} and cannot be reserved.</div><a class="button button-outline full-width" href="{% url 'home' %}#parts">Find another part</a>
+    {% elif user.is_authenticated %}<form method="post" action="{% url 'part-reserve' part.pk %}" class="reserve-form">{% csrf_token %}{{ form.non_field_errors }}<div class="field">{{ form.repair_note.label_tag }}{{ form.repair_note }}{{ form.repair_note.errors }}</div><div class="checkbox-field">{{ form.compatibility_confirmed }}<label for="{{ form.compatibility_confirmed.id_for_label }}">{{ form.compatibility_confirmed.label }}</label></div>{{ form.compatibility_confirmed.errors }}<button class="button button-dark full-width" type="submit">Reserve this part <span aria-hidden="true">↗</span></button></form>
+    {% else %}<p>Log in to reserve this part for your repair.</p><a class="button button-dark full-width" href="{% url 'login' %}?next={{ request.path|urlencode }}">Log in to reserve</a>{% endif %}
+    {% if user.is_authenticated %}<details class="report-details"><summary>Something wrong with this listing?</summary><form method="post" action="{% url 'part-report' part.pk %}">{% csrf_token %}{{ report_form.as_p }}<button class="button button-outline" type="submit">Report for review</button></form></details>{% endif %}
+  </div>
+</section>
+{% endblock %}

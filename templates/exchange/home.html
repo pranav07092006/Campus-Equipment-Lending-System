@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="hero">
+  <div class="hero-copy"><p class="eyebrow"><span class="live-dot"></span> THE SPARE-PARTS EXCHANGE</p>
+    <h1>One device's end.<br>Another's <em>beginning.</em></h1>
+    <p class="hero-description">Find the component that brings a device back to life. Share the parts you no longer need.</p>
+    <div class="hero-actions"><a class="button button-dark" href="#parts">Explore the parts <span aria-hidden="true">↗</span></a><a class="text-link" href="{% url 'about' %}">How ReLoop works <span aria-hidden="true">↗</span></a></div>
+  </div>
+  <aside class="hero-aside"><span class="outline-word" aria-hidden="true">RE<br>USE.</span><div class="hero-stat"><strong>{{ available_count|stringformat:'02d' }}</strong><div>parts available<br>for another chapter</div></div><p class="hero-aside-note">{{ collected_count }} collection{{ collected_count|pluralize }} recorded in this instance</p></aside>
+</section>
+<div class="principle-strip"><span>01 &nbsp; Match the exact part code</span><span>02 &nbsp; Reserve one physical part</span><span>03 &nbsp; Confirm the handover</span></div>
+<section id="parts" class="catalogue">
+  <div class="section-heading"><div><p class="eyebrow">THE PARTS SHELF</p><h2>A small part. A new possibility.</h2></div><span class="result-count">{{ page_obj.paginator.count }} result{{ page_obj.paginator.count|pluralize }}</span></div>
+  <form class="search-form" method="get" action="{% url 'home' %}#parts" role="search">
+    <label class="search-box"><span class="sr-only">Search parts</span><span aria-hidden="true">⌕</span><input name="q" value="{{ request.GET.q }}" placeholder="Search part code, device model or component…"></label>
+    <label><span class="sr-only">Category</span><select name="category"><option value="">All categories</option>{% for value,label in categories %}<option value="{{ value }}" {% if request.GET.category == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+    <label><span class="sr-only">Condition</span><select name="condition"><option value="">Any condition</option>{% for value,label in conditions %}<option value="{{ value }}" {% if request.GET.condition == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+    <label><span class="sr-only">Availability</span><select name="status"><option value="available" {% if request.GET.status == 'available' %}selected{% endif %}>Available</option><option value="all" {% if request.GET.status == 'all' %}selected{% endif %}>All statuses</option><option value="reserved" {% if request.GET.status == 'reserved' %}selected{% endif %}>Reserved</option><option value="collected" {% if request.GET.status == 'collected' %}selected{% endif %}>Collected</option></select></label>
+    <button class="button button-dark" type="submit">Search</button>
+  </form>
+  {% if request.GET.q or request.GET.category or request.GET.condition or request.GET.status %}<p class="filter-summary">Showing your selected filters. <a href="{% url 'home' %}#parts">Clear filters</a></p>{% endif %}
+  <div class="part-grid">{% for part in page_obj %}
+    <article class="part-card">
+      <a class="part-art {{ part.category }}" href="{{ part.get_absolute_url }}" aria-label="View {{ part.title }}"><span class="art-category">{{ part.get_category_display }}</span><span class="part-monogram" aria-hidden="true">{% if part.category == 'screen' %}LCD{% elif part.category == 'memory' %}RAM{% elif part.category == 'storage' %}DISK{% elif part.category == 'keyboard' %}KEY{% else %}PART{% endif %}</span><span class="art-code">{{ part.part_code }}</span><span class="art-link" aria-hidden="true">↗</span></a>
+      <div class="card-meta"><span class="condition {{ part.condition }}">{{ part.get_condition_display }}</span><span class="status-label {{ part.status }}">{{ part.get_status_display }}</span></div>
+      <h3><a href="{{ part.get_absolute_url }}">{{ part.title }}</a></h3><p class="manufacturer">{{ part.manufacturer }}</p><div class="card-bottom"><span>{{ part.pickup_area }}</span><span>by {{ part.owner.username }}</span></div>
+    </article>
+  {% empty %}<div class="empty-state"><p class="eyebrow">NOT ON THE SHELF YET</p><h3>No matching parts found</h3><p>Try a different part code or clear the filters. You can also contribute the first listing.</p><a class="button button-dark" href="{% url 'part-create' %}">List a part</a></div>{% endfor %}</div>
+  {% if page_obj.has_other_pages %}<nav class="pagination" aria-label="Results pages">{% if page_obj.has_previous %}<a class="button button-outline" href="?{{ query_string }}&page={{ page_obj.previous_page_number }}#parts">Previous</a>{% endif %}<span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>{% if page_obj.has_next %}<a class="button button-outline" href="?{{ query_string }}&page={{ page_obj.next_page_number }}#parts">Next</a>{% endif %}</nav>{% endif %}
+</section>
+<section class="contribute-banner"><div><p class="eyebrow">DON'T LET A USEFUL PART SIT IDLE</p><h2>Your spare could finish<br>someone else's repair.</h2></div><a class="button button-cream" href="{% url 'part-create' %}">Give a part another purpose <span aria-hidden="true">↗</span></a></section>
+{% endblock %}
